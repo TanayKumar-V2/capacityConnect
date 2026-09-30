@@ -171,6 +171,7 @@ export default async function LoginPage(props: { searchParams: Promise<{ mode?: 
                   <SelectContent>
                     <SelectItem value="learner">Learner</SelectItem>
                     <SelectItem value="trainer">Trainer</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
