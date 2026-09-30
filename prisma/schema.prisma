@@ -1,10 +1,12 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
 }
 
 model Organization {
@@ -26,6 +28,8 @@ model OrganizationalUnit {
 
   organization   Organization @relation(fields: [organizationId], references: [id])
   users          User[]
+
+  @@index([organizationId])
 }
 
 model User {
@@ -47,6 +51,9 @@ model User {
   lessonCompletions    LessonCompletion[]
   planAssignments      LearningPlanAssignment[]
   uploadedResources    Resource[]
+
+  @@index([organizationId])
+  @@index([email])
 }
 
 model Role {
@@ -69,6 +76,7 @@ model UserRole {
   role      Role @relation(fields: [roleId], references: [id])
 
   @@unique([userId, roleId])
+  @@index([userId])
 }
 
 model Course {
@@ -87,6 +95,9 @@ model Course {
   competencies CourseCompetency[]
   planItems   LearningPlanItem[]
   resources   Resource[]
+  assessments Assessment[]
+
+  @@index([ownerId])
 }
 
 model CourseSection {
@@ -99,6 +110,8 @@ model CourseSection {
 
   course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   lessons     Lesson[]
+
+  @@index([courseId])
 }
 
 model Lesson {
@@ -113,16 +126,22 @@ model Lesson {
   section     CourseSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   completions LessonCompletion[]
   resources   Resource[]
+
+  @@index([sectionId])
 }
 
 model AuditLog {
-  id          String   @id @default(uuid())
-  action      String
-  entityType  String
-  entityId    String
-  actorId     String?
-  metadata    String?
-  createdAt   DateTime @default(now())
+  id             String   @id @default(uuid())
+  userId         String?
+  organizationId String?
+  action         String
+  entityType     String
+  entityId       String
+  metadata       String?
+  createdAt      DateTime @default(now())
+
+  @@index([userId])
+  @@index([organizationId])
 }
 
 model Enrollment {
@@ -137,6 +156,8 @@ model Enrollment {
   course    Course @relation(fields: [courseId], references: [id])
 
   @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
 }
 
 model LessonCompletion {
@@ -149,6 +170,8 @@ model LessonCompletion {
   lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
 }
 
 model Competency {
@@ -162,6 +185,7 @@ model Competency {
   updatedAt   DateTime @updatedAt
 
   courses     CourseCompetency[]
+  assessmentQuestions AssessmentQuestion[]
 }
 
 model CourseCompetency {
@@ -174,6 +198,8 @@ model CourseCompetency {
   competency   Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
 
   @@unique([courseId, competencyId])
+  @@index([courseId])
+  @@index([competencyId])
 }
 
 model LearningPlan {
@@ -201,6 +227,7 @@ model LearningPlanItem {
   course         Course       @relation(fields: [courseId], references: [id])
 
   @@unique([learningPlanId, courseId])
+  @@index([learningPlanId])
 }
 
 model LearningPlanAssignment {
@@ -213,26 +240,114 @@ model LearningPlanAssignment {
   plan           LearningPlan @relation(fields: [learningPlanId], references: [id], onDelete: Cascade)
 
   @@unique([userId, learningPlanId])
+  @@index([userId])
 }
 
 model Resource {
-  id           String   @id @default(uuid())
-  displayName  String
-  description  String?
-  originalName String
-  mimeType     String
-  sizeBytes    Int
-  storageKey   String   @unique
-  courseId     String?
-  lessonId     String?
+  id             String   @id @default(uuid())
+  displayName    String
+  description    String?
+  originalName   String
+  mimeType       String
+  sizeBytes      Int
+  storageKey     String   @unique
+  courseId       String?
+  lessonId       String?
   uploaderId     String
   extractedText  String?
-  indexingStatus String   @default("PENDING") // PENDING, SUCCESS, FAILED
+  indexingStatus String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
   isArchived     Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  uploader     User     @relation(fields: [uploaderId], references: [id])
-  course       Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lesson       Lesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  uploader       User     @relation(fields: [uploaderId], references: [id])
+  course         Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson         Lesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  chunks         ResourceChunk[]
+
+  @@index([courseId])
+  @@index([lessonId])
+}
+
+model ResourceChunk {
+  id         String   @id @default(uuid())
+  resourceId String
+  chunkIndex Int
+  content    String
+  embedding  Unsupported("vector(768)")?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([resourceId])
+}
+
+model Assessment {
+  id          String   @id @default(uuid())
+  courseId    String
+  title       String
+  description String?
+  difficulty  String   @default("MEDIUM") // EASY, MEDIUM, HARD
+  status      String   @default("DRAFT")  // DRAFT, PUBLISHED
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  questions   AssessmentQuestion[]
+  attempts    AssessmentAttempt[]
+
+  @@index([courseId])
+}
+
+model AssessmentQuestion {
+  id             String   @id @default(uuid())
+  assessmentId   String
+  question       String
+  options        String   // JSON array string
+  correctOption  Int
+  explanation    String?
+  competencyId   String?
+  order          Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  assessment     Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  competency     Competency? @relation(fields: [competencyId], references: [id])
+  answers        AssessmentAnswer[]
+
+  @@index([assessmentId])
+  @@index([competencyId])
+}
+
+model AssessmentAttempt {
+  id           String   @id @default(uuid())
+  assessmentId String
+  learnerId    String
+  score        Float?
+  status       String   @default("IN_PROGRESS") // IN_PROGRESS, SUBMITTED
+  startedAt    DateTime @default(now())
+  submittedAt  DateTime?
+
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  answers      AssessmentAnswer[]
+
+  @@index([assessmentId])
+  @@index([learnerId])
+}
+
+model AssessmentAnswer {
+  id               String   @id @default(uuid())
+  attemptId        String
+  questionId       String
+  selectedOption   Int
+  isCorrect        Boolean?
+  createdAt        DateTime @default(now())
+
+  attempt          AssessmentAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question         AssessmentQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([attemptId])
+  @@index([questionId])
 }

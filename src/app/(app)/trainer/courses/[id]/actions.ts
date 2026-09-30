@@ -24,7 +24,7 @@ export async function addSection(courseId: string, formData: FormData) {
   })
 
   await prisma.auditLog.create({
-    data: { action: "SECTION_CREATED", entityType: "Course", entityId: courseId, actorId: user.id }
+    data: { action: "SECTION_CREATED", entityType: "Course", entityId: courseId, userId: user.id }
   })
 
   revalidatePath(`/trainer/courses/${courseId}`)
@@ -54,7 +54,7 @@ export async function addLesson(courseId: string, sectionId: string, formData: F
   })
 
   await prisma.auditLog.create({
-    data: { action: "LESSON_CREATED", entityType: "Course", entityId: courseId, actorId: user.id }
+    data: { action: "LESSON_CREATED", entityType: "Course", entityId: courseId, userId: user.id }
   })
 
   revalidatePath(`/trainer/courses/${courseId}`)
@@ -96,7 +96,7 @@ export async function publishCourse(courseId: string) {
   })
 
   await prisma.auditLog.create({
-    data: { action: "COURSE_PUBLISHED", entityType: "Course", entityId: courseId, actorId: user.id }
+    data: { action: "COURSE_PUBLISHED", entityType: "Course", entityId: courseId, userId: user.id }
   })
 
   revalidatePath(`/trainer/courses/${courseId}`)

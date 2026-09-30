@@ -25,7 +25,7 @@ export async function createLearningPlan(formData: FormData) {
   })
 
   await prisma.auditLog.create({
-    data: { action: "LEARNING_PLAN_CREATED", entityType: "LearningPlan", entityId: plan.id, actorId: user.id }
+    data: { action: "LEARNING_PLAN_CREATED", entityType: "LearningPlan", entityId: plan.id, userId: user.id }
   })
 
   redirect(`/admin/learning-plans/${plan.id}`)
@@ -61,7 +61,7 @@ export async function addCourseToPlan(planId: string, formData: FormData) {
   })
 
   await prisma.auditLog.create({
-    data: { action: "LEARNING_PLAN_ITEM_ADDED", entityType: "LearningPlan", entityId: planId, actorId: user.id, metadata: `courseId:${courseId}` }
+    data: { action: "LEARNING_PLAN_ITEM_ADDED", entityType: "LearningPlan", entityId: planId, userId: user.id, metadata: `courseId:${courseId}` }
   })
 
   revalidatePath(`/admin/learning-plans/${planId}`)
@@ -89,7 +89,7 @@ export async function assignPlanToLearner(planId: string, formData: FormData) {
     })
 
     await prisma.auditLog.create({
-      data: { action: "LEARNING_PLAN_ASSIGNED", entityType: "LearningPlan", entityId: planId, actorId: user.id, metadata: `assignedUserId:${userId}` }
+      data: { action: "LEARNING_PLAN_ASSIGNED", entityType: "LearningPlan", entityId: planId, userId: user.id, metadata: `assignedUserId:${userId}` }
     })
   }
 

@@ -35,7 +35,7 @@ export async function createCompetency(formData: FormData) {
       action: "COMPETENCY_CREATED",
       entityType: "Competency",
       entityId: competency.id,
-      actorId: user.id
+      userId: user.id
     }
   })
 
@@ -55,7 +55,7 @@ export async function archiveCompetency(id: string) {
       action: "COMPETENCY_ARCHIVED",
       entityType: "Competency",
       entityId: id,
-      actorId: user.id
+      userId: user.id
     }
   })
 

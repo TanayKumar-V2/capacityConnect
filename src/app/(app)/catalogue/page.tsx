@@ -34,7 +34,7 @@ export default async function CourseCatalogue() {
         data: { userId: user.id, courseId, status: "IN_PROGRESS" }
       })
       await prisma.auditLog.create({
-        data: { action: "ENROLLMENT_CREATED", entityType: "Course", entityId: courseId, actorId: user.id }
+        data: { action: "ENROLLMENT_CREATED", entityType: "Course", entityId: courseId, userId: user.id }
       })
     }
     

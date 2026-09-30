@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
           action: "RESOURCE_UPLOADED",
           entityType: "Resource",
           entityId: resource.id,
-          actorId: user.id,
+          userId: user.id,
           metadata: `courseId:${courseId}, indexingStatus:${indexingStatus}`
         }
       })

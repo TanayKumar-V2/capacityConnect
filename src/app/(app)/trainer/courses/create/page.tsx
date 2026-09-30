@@ -35,7 +35,7 @@ export default async function CreateCoursePage() {
         action: "COURSE_CREATED",
         entityType: "Course",
         entityId: course.id,
-        actorId: user.id
+        userId: user.id
       }
     })
 

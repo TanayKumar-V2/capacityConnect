@@ -31,7 +31,7 @@ export async function deleteResource(courseId: string, resourceId: string) {
       action: "RESOURCE_DELETED",
       entityType: "Resource",
       entityId: resourceId,
-      actorId: user.id
+      userId: user.id
     }
   })
 
@@ -93,7 +93,7 @@ export async function retryIndexing(courseId: string, resourceId: string) {
       action: "RESOURCE_INDEX_RETRY",
       entityType: "Resource",
       entityId: resourceId,
-      actorId: user.id,
+      userId: user.id,
       metadata: `outcome:${finalStatus}`
     }
   })

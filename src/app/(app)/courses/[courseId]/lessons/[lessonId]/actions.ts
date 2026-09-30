@@ -23,7 +23,7 @@ export async function markLessonComplete(courseId: string, lessonId: string) {
     })
     
     await prisma.auditLog.create({
-      data: { action: "LESSON_COMPLETED", entityType: "Lesson", entityId: lessonId, actorId: user.id }
+      data: { action: "LESSON_COMPLETED", entityType: "Lesson", entityId: lessonId, userId: user.id }
     })
   }
 

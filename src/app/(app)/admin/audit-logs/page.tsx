@@ -10,7 +10,7 @@ import { Search, ChevronLeft, ChevronRight } from "lucide-react"
 export default async function AuditLogsPage({
   searchParams,
 }: {
-  searchParams: { page?: string, action?: string, actorId?: string }
+  searchParams: { page?: string, action?: string, userId?: string }
 }) {
   await requireRole(['ADMIN'])
 
@@ -19,7 +19,7 @@ export default async function AuditLogsPage({
   const skip = (page - 1) * pageSize
 
   const filterAction = searchParams.action
-  const filterActorId = searchParams.actorId
+  const filterActorId = searchParams.userId
 
   // Safe query construction
   const where: Record<string, unknown> = {}
@@ -27,7 +27,7 @@ export default async function AuditLogsPage({
     where.action = filterAction
   }
   if (filterActorId) {
-    where.actorId = filterActorId
+    where.userId = filterActorId
   }
 
   const [totalCount, logs] = await Promise.all([
@@ -76,7 +76,7 @@ export default async function AuditLogsPage({
              
              <div className="flex-1 space-y-2 w-full">
                <label className="text-sm font-medium">Actor ID</label>
-               <Input name="actorId" placeholder="UUID of the acting user" defaultValue={filterActorId} />
+               <Input name="userId" placeholder="UUID of the acting user" defaultValue={filterActorId} />
              </div>
 
              <Button type="submit" className="w-full sm:w-auto h-10">
@@ -117,7 +117,7 @@ export default async function AuditLogsPage({
                         {log.action}
                       </span>
                     </TableCell>
-                    <TableCell className="font-mono text-xs">{log.actorId || "System"}</TableCell>
+                    <TableCell className="font-mono text-xs">{log.userId || "System"}</TableCell>
                     <TableCell className="text-sm font-medium">{log.entityType}</TableCell>
                     <TableCell className="font-mono text-xs">{log.entityId}</TableCell>
                     <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate" title={log.metadata || ""}>
@@ -137,12 +137,12 @@ export default async function AuditLogsPage({
             </span>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" asChild disabled={page <= 1}>
-                <a href={`/admin/audit-logs?page=${page - 1}&action=${filterAction || ''}&actorId=${filterActorId || ''}`}>
+                <a href={`/admin/audit-logs?page=${page - 1}&action=${filterAction || ''}&userId=${filterActorId || ''}`}>
                   <ChevronLeft className="w-4 h-4 mr-2" /> Previous
                 </a>
               </Button>
               <Button variant="outline" size="sm" asChild disabled={page >= totalPages}>
-                <a href={`/admin/audit-logs?page=${page + 1}&action=${filterAction || ''}&actorId=${filterActorId || ''}`}>
+                <a href={`/admin/audit-logs?page=${page + 1}&action=${filterAction || ''}&userId=${filterActorId || ''}`}>
                   Next <ChevronRight className="w-4 h-4 ml-2" />
                 </a>
               </Button>
